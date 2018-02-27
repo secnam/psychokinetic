@@ -27,22 +27,54 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import psychokinetic.models
-from luxon import register_middleware
+import os
+from getpass import getpass
 
-from luxon.middleware.wsgi.api.token import Token
-from luxon.middleware.policy import Policy
+from luxon import g
+from luxon import GetLogger
+from luxon.exceptions import AccessDenied
+from luxon.utils.imports import get_class
 
-register_middleware(Token)
-register_middleware(Policy)
+from psychokinetic.client import Client
 
-import luxon.resources.wsgi.api.index
-import luxon.resources.wsgi.api.token
-import luxon.resources.wsgi.api.endpoints
-import luxon.resources.wsgi.api.domains
-import luxon.resources.wsgi.api.roles
-import luxon.resources.wsgi.api.rbac
-import luxon.resources.wsgi.api.tenants
-import luxon.resources.wsgi.api.users
+log = GetLogger(__name__)
 
-import psychokinetic.views
+class Auth(object):
+    __slots__ = ()
+
+    def pre(self, req, resp):
+        if 'TAC_API' not in os.environ:
+            raise AccessDenied('Require Tachyonic URI (TAC_API system' +
+                               ' environment)')
+
+        print('API: %s' % os.environ['TAC_API'])
+
+        if 'TAC_DOMAIN' not in os.environ:
+            domain = None
+            print('Domain: -*Global*-')
+        else:
+            domain = os.environ['TAC_DOMAIN']
+            print('Domain: %s' % domain)
+
+        if 'TAC_USER' not in os.environ:
+            raise AccessDenied('Require Tachyonic Username (TAC_USER system' +
+                               ' environment)')
+
+        print('Username: %s' % os.environ['TAC_USER'])
+
+
+        if 'TAC_TENANT_ID' not in os.environ:
+            tenant_id = None
+        else:
+            tenant_id = os.environ['TAC_TENANT_ID']
+
+        g.api = api = Client(os.environ['TAC_API'])
+
+        password = getpass(prompt='Password: ')
+        print('')
+
+        api.authenticate(os.environ['TAC_USER'],
+                         password,
+                         domain)
+
+        api.scope(domain, tenant_id)

@@ -28,20 +28,15 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-def start(name, app_root=None, virtualenv=None):
-    # Activate your virtualenv
-    if virtualenv is not None:
-        activate_this = virtualenv.rstrip('/') + '/bin/activate_this.py'
-        exec(open(activate_this).read())
+from psychokinetic.auth.driver import BaseDriver
 
-    # Import after virtualenv, since luxon could be inside of the env.
-    from luxon.core.handlers.wsgi import Wsgi
-    app = Wsgi(name, app_root)
-
-    # This the place to start importing luxon packages/modules.
-    import psychokinetic.app
-
-    return app
-
-
-application = start(__name__)
+class ExampleDriver(BaseDriver):
+    """Example Authentication Driver.
+    """
+    def authenticate(self, username, password, domain=None):
+        if username == 'root' and password == 'test' and domain == 'default':
+            self.new_token(user_id=1234, username='root',
+                           domain=None, tenant_id=None)
+            return True
+        else:
+            return False

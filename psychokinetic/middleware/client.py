@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Copyright (c) 2018 Christiaan Frans Rademan.
 # All rights reserved.
@@ -28,32 +27,14 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
-import os
-import sys
-import argparse
-import site
-
-if not sys.version_info >= (3,5):
-    print('Requires python version 3.5 or higher')
-    exit()
-
 from luxon import g
-from luxon.core.handlers.script import Script
-from luxon.utils.encoding import if_bytes_to_unicode
-from luxon import register_resource
-from luxon import register_middleware
-from luxon.utils.formatting import format_obj
+from psychokinetic.client import Client as APIClient
 
-from psychokinetic import metadata
+class Client(object):
+    __slots__ = ( 'restapi' )
 
-def main(argv):
-    pass
+    def __init__(self):
+        self.restapi = g.config.get('application','restapi')
 
-def entry_point():
-    """Zero-argument entry point for use with setuptools/distribute."""
-    raise SystemExit(main(sys.argv))
-
-
-if __name__ == '__main__':
-    entry_point()
+    def pre(self, req, resp):
+        req.context.client = g.client = APIClient(self.restapi)
