@@ -31,10 +31,14 @@ from luxon import g
 from psychokinetic.client import Client as APIClient
 
 class Client(object):
-    __slots__ = ( 'restapi' )
+    __slots__ = ( 'restapi', 'region', 'interface' )
 
     def __init__(self):
-        self.restapi = g.config.get('application','restapi')
+        self.restapi = g.config.get('restapi', 'uri')
+        self.region = g.config.get('restapi', 'region')
+        self.interface = g.config.get('restapi', 'interface')
 
     def pre(self, req, resp):
-        req.context.client = g.client = APIClient(self.restapi)
+        req.context.client = g.client = APIClient(self.restapi,
+                                                 default_region=self.region,
+                                                 default_interface=self.interface)
