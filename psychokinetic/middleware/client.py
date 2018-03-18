@@ -42,3 +42,35 @@ class Client(object):
         req.context.client = g.client = APIClient(self.restapi,
                                                  default_region=self.region,
                                                  default_interface=self.interface)
+        if req.get_header('X-Auth-Token'):
+            token = req.get_header('token')
+        else:
+            token = req.session.get('token')
+
+        if req.get_header('X-Region'):
+            region = req.get_header('X-Region')
+        else:
+            region = req.session.get('region')
+
+        scoped = req.session.get('scoped')
+
+        if req.get_header('X-Domain'):
+            domain = req.get_header('X-Domain')
+        else:
+            domain = req.session.get('domain')
+
+        if req.get_header('X-Tenant-Id'):
+            tenant_id = req.get_header('X-Tenant-Id')
+        else:
+            tenant_id = req.session.get('tenant_id')
+
+        if region is None:
+            region = g.config.get('restapi', 'region')
+
+        if token is not None:
+            g.client.set_context(token,
+                                 scoped,
+                                 domain,
+                                 tenant_id,
+                                 region,
+                                 g.config.get('restapi', 'interface'))
